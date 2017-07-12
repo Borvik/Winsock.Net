@@ -362,8 +362,10 @@
             // 
             this.wskServer.CustomTextEncoding = ((System.Text.Encoding)(resources.GetObject("wskServer.CustomTextEncoding")));
             this.wskServer.ClientCountChanged += new System.EventHandler(this.wskServer_ClientCountChanged);
+            this.wskServer.Connected += new System.EventHandler<Treorisoft.Net.ConnectedEventArgs>(this.wskServer_Connected);
             this.wskServer.ConnectionRequest += new System.EventHandler<Treorisoft.Net.ConnectionRequestEventArgs>(this.wskServer_ConnectionRequest);
             this.wskServer.DataArrival += new System.EventHandler<Treorisoft.Net.DataArrivalEventArgs>(this.wskServer_DataArrival);
+            this.wskServer.Disconnected += new System.EventHandler(this.wskServer_Disconnected);
             this.wskServer.ErrorReceived += new System.EventHandler<Treorisoft.Net.ErrorReceivedEventArgs>(this.wskServer_ErrorReceived);
             this.wskServer.ReceiveProgress += new System.EventHandler<Treorisoft.Net.ReceiveProgressEventArgs>(this.wskServer_ReceiveProgress);
             this.wskServer.SendProgress += new System.EventHandler<Treorisoft.Net.SendProgressEventArgs>(this.wskServer_SendProgress);
@@ -372,7 +374,9 @@
             // wskClient
             // 
             this.wskClient.CustomTextEncoding = ((System.Text.Encoding)(resources.GetObject("wskClient.CustomTextEncoding")));
+            this.wskClient.Connected += new System.EventHandler<Treorisoft.Net.ConnectedEventArgs>(this.wskClient_Connected);
             this.wskClient.DataArrival += new System.EventHandler<Treorisoft.Net.DataArrivalEventArgs>(this.wskClient_DataArrival);
+            this.wskClient.Disconnected += new System.EventHandler(this.wskClient_Disconnected);
             this.wskClient.ErrorReceived += new System.EventHandler<Treorisoft.Net.ErrorReceivedEventArgs>(this.wskClient_ErrorReceived);
             this.wskClient.ReceiveProgress += new System.EventHandler<Treorisoft.Net.ReceiveProgressEventArgs>(this.wskClient_ReceiveProgress);
             this.wskClient.SendProgress += new System.EventHandler<Treorisoft.Net.SendProgressEventArgs>(this.wskClient_SendProgress);

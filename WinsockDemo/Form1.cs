@@ -120,6 +120,12 @@ namespace WinsockDemo
             RefreshClients();
         }
 
+        private void wskServer_Connected(object sender, Treorisoft.Net.ConnectedEventArgs e)
+        {
+            string source = (sender == wskServer) ? "Parent" : "Client";
+            if (ServerLog) LogServer(string.Format("{0}: Connected ({1} on port {2})", source, e.RemoteIP, e.RemotePort));
+        }
+
         private void wskServer_ConnectionRequest(object sender, Treorisoft.Net.ConnectionRequestEventArgs e)
         {
             if (ServerLog) LogServer(string.Format("Parent: Connection Request ({0})", e.RemoteIP));
@@ -145,6 +151,12 @@ namespace WinsockDemo
             }
             else
                 LogServer(string.Format("{0} Data Arrived: {1}", source, data.GetType()));
+        }
+
+        private void wskServer_Disconnected(object sender, EventArgs e)
+        {
+            string source = (sender == wskServer) ? "Parent" : "Client";
+            if (ServerLog) LogServer(string.Format("{0}: Disconnected", source));
         }
 
         private void wskServer_ErrorReceived(object sender, Treorisoft.Net.ErrorReceivedEventArgs e)
@@ -233,6 +245,16 @@ namespace WinsockDemo
             }
             else
                 LogClient(string.Format("Data Arrived: {0}", data.GetType()));
+        }
+
+        private void wskClient_Disconnected(object sender, EventArgs e)
+        {
+            if (ClientLog) LogClient("Disconnected");
+        }
+
+        private void wskClient_Connected(object sender, Treorisoft.Net.ConnectedEventArgs e)
+        {
+            if (ClientLog) LogClient(string.Format("Connected ({0} on port {1})", e.RemoteIP, e.RemotePort));
         }
 
         private void wskClient_ErrorReceived(object sender, ErrorReceivedEventArgs e)

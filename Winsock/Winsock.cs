@@ -74,6 +74,10 @@ namespace Treorisoft.Net
         /// </summary>
         public event EventHandler ClientCountChanged;
         /// <summary>
+        /// Occurs on the client/server when a connection has been established.
+        /// </summary>
+        public event EventHandler<ConnectedEventArgs> Connected;
+        /// <summary>
         /// Occurs on the server when a client is attempting to connect.
         /// </summary>
         public event EventHandler<ConnectionRequestEventArgs> ConnectionRequest;
@@ -85,6 +89,10 @@ namespace Treorisoft.Net
         /// Occurs when data arrives from the connected device.
         /// </summary>
         public event EventHandler<DataArrivalEventArgs> DataArrival;
+        /// <summary>
+        /// Occurs when a connected socket is closed.
+        /// </summary>
+        public event EventHandler Disconnected;
         /// <summary>
         /// Occurs when an internal error is detected.
         /// </summary>
@@ -765,9 +773,13 @@ namespace Treorisoft.Net
         internal void OnBufferSizeChanged(object sender) { BufferSizeChanged.SafeRaise(CanRaiseEvents, sender, EventArgs.Empty); }
         internal void OnCertificateChanged(object sender) { CertificateChanged.SafeRaise(CanRaiseEvents, sender, EventArgs.Empty); }
         internal void OnClientCountChanged(object sender) { ClientCountChanged.SafeRaise(CanRaiseEvents, sender, EventArgs.Empty); }
+        internal void OnConnected(IPEndPoint endPoint) { OnConnected(this, new ConnectedEventArgs(endPoint)); }
+        internal void OnConnected(object sender, ConnectedEventArgs args) { Connected.SafeRaise(CanRaiseEvents, sender, args); }
         internal ConnectionRequestEventArgs OnConnectionRequest(object sender, ConnectionRequestEventArgs args) { ConnectionRequest.SafeRaise(CanRaiseEvents, sender, args); return args; }
         internal void OnCustomTextEncodingChanged(object sender) { CustomTextEncodingChanged.SafeRaise(CanRaiseEvents, sender, EventArgs.Empty); }
         internal void OnDataArrival(object sender, DataArrivalEventArgs args) { DataArrival.SafeRaise(CanRaiseEvents, sender, args); }
+        internal void OnDisconnected() { OnDisconnected(this, EventArgs.Empty); }
+        internal void OnDisconnected(object sender, EventArgs args) { Disconnected.SafeRaise(CanRaiseEvents, sender, args); }
         internal void OnErrorReceived(object sender, ErrorReceivedEventArgs args) { ErrorReceived.SafeRaise(CanRaiseEvents, sender, args); }
         internal void OnLegacySupportChanged(object sender) { LegacySupportChanged.SafeRaise(CanRaiseEvents, sender, EventArgs.Empty); }
         internal void OnLocalPortChanged(object sender) { LocalPortChanged.SafeRaise(CanRaiseEvents, sender, EventArgs.Empty); }

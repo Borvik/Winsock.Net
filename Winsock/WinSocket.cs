@@ -88,6 +88,8 @@ namespace Treorisoft.Net
                     socket = null;
                 }
                 Parent.ChangeState(State.Closed);
+                if (oldState == State.Connected)
+                    Parent.OnDisconnected();
             }
             catch (Exception ex)
             {
@@ -210,6 +212,7 @@ namespace Treorisoft.Net
 
             await socket.ConnectAsync(endPoint);
             Parent.ChangeState(State.Connected);
+            Parent.OnConnected(endPoint);
             if (sslHost != null) BeginReceive(false, sslHost);
             else BeginReceive(false);
         }
@@ -232,6 +235,7 @@ namespace Treorisoft.Net
             {
                 socket = new AsyncSocket(client);
                 Parent.ChangeState(State.Connected);
+                Parent.OnConnected(RemoteEndPoint);
                 BeginReceive(true);
                 return true;
             }

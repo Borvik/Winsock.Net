@@ -100,36 +100,39 @@ namespace Treorisoft.Net.Utilities
         }
         private void AttachEvents(Winsock client)
         {
-            client.StateChanged += Client_StateChanged;
+            //client.StateChanged += Client_StateChanged;
             client.StateChanged += Parent.OnStateChanged;
             client.ErrorReceived += Parent.OnErrorReceived;
             client.DataArrival += Parent.OnDataArrival;
             client.ReceiveProgress += Parent.OnReceiveProgress;
             client.SendProgress += Parent.OnSendProgress;
+            client.Connected += Parent.OnConnected;
+            client.Disconnected += Client_Disconnected;
+            client.Disconnected += Parent.OnDisconnected;
         }
         private void DetachEvents(Winsock client)
         {
-            client.StateChanged -= Client_StateChanged;
+            //client.StateChanged -= Client_StateChanged;
             client.StateChanged -= Parent.OnStateChanged;
             client.ErrorReceived -= Parent.OnErrorReceived;
             client.DataArrival -= Parent.OnDataArrival;
             client.ReceiveProgress -= Parent.OnReceiveProgress;
             client.SendProgress -= Parent.OnSendProgress;
+            client.Connected -= Parent.OnConnected;
+            client.Disconnected -= Client_Disconnected;
+            client.Disconnected -= Parent.OnDisconnected;
         }
 
-        private void Client_StateChanged(object sender, StateChangedEventArgs e)
+        private void Client_Disconnected(object sender, EventArgs e)
         {
-            if (e.NewState == State.Closed && e.OldState == State.Closing)
+            // Close or Disconnected detected - check for AutoRemoval
+            Winsock client = (Winsock)sender;
+            Guid guid = FindKey(client);
+            if (guid != Guid.Empty && (AutoRemove || _forceAutoRemove.Contains(guid)))
             {
-                // Close or Disconnected detected - check for AutoRemoval
-                Winsock client = (Winsock)sender;
-                Guid guid = FindKey(client);
-                if (guid != Guid.Empty && (AutoRemove || _forceAutoRemove.Contains(guid)))
-                {
-                    lock (SyncRootRemoveList)
-                        _autoRemoveList.Enqueue(guid);
-                    (new Thread(ClientRemovalThread)).Start();
-                }
+                lock (SyncRootRemoveList)
+                    _autoRemoveList.Enqueue(guid);
+                (new Thread(ClientRemovalThread)).Start();
             }
         }
 
