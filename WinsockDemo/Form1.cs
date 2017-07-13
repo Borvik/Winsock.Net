@@ -123,7 +123,9 @@ namespace WinsockDemo
         private void wskServer_Connected(object sender, Treorisoft.Net.ConnectedEventArgs e)
         {
             string source = (sender == wskServer) ? "Parent" : "Client";
+            Winsock wsk = (sender as Winsock);
             if (ServerLog) LogServer(string.Format("{0}: Connected ({1} on port {2})", source, e.RemoteIP, e.RemotePort));
+            if (ServerLog) LogServer(string.Format("{0}: Connected ({1} on port {2})", "sender", wsk.RemoteHost, wsk.RemotePort));
         }
 
         private void wskServer_ConnectionRequest(object sender, Treorisoft.Net.ConnectionRequestEventArgs e)

@@ -404,13 +404,7 @@ namespace Treorisoft.Net
 
             // We add it to the clients list so any event handlers can fire.
             var guid = Clients.Add(w);
-            if (w._socket.Accept(client))
-            {
-                w.ChangeLocalPort(w._socket.LocalEndPoint.Port);
-                w.ChangeRemoteHost(w._socket.RemoteEndPoint.Address.ToString());
-                w.ChangeRemotePort(w._socket.RemoteEndPoint.Port);
-            }
-            else
+            if (!w._socket.Accept(client))
                 Clients.Remove(guid);
         }
 

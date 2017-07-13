@@ -234,6 +234,11 @@ namespace Treorisoft.Net
             try
             {
                 socket = new AsyncSocket(client);
+                
+                Parent.ChangeLocalPort(LocalEndPoint.Port);
+                Parent.ChangeRemoteHost(RemoteEndPoint.Address.ToString());
+                Parent.ChangeRemotePort(RemoteEndPoint.Port);
+
                 Parent.ChangeState(State.Connected);
                 Parent.OnConnected(RemoteEndPoint);
                 BeginReceive(true);
