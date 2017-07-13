@@ -210,11 +210,25 @@ namespace Treorisoft.Net
             socket = new AsyncSocket(endPoint.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
             Parent.ChangeState(State.Connecting);
 
-            await socket.ConnectAsync(endPoint);
-            Parent.ChangeState(State.Connected);
-            Parent.OnConnected(endPoint);
-            if (sslHost != null) BeginReceive(false, sslHost);
-            else BeginReceive(false);
+            bool connectFail = false;
+            try
+            {
+                await socket.ConnectAsync(endPoint);
+            }
+            catch(Exception ex)
+            {
+                connectFail = true;
+                Parent.ChangeState(State.Closed);
+                Parent.OnErrorReceived(Parent, ErrorReceivedEventArgs.Create(ex));
+            }
+            
+            if (!connectFail)
+            {
+                Parent.ChangeState(State.Connected);
+                Parent.OnConnected(endPoint);
+                if (sslHost != null) BeginReceive(false, sslHost);
+                else BeginReceive(false);
+            }
         }
 
         #endregion
