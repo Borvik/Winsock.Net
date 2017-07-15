@@ -1,11 +1,13 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.22823.1
+# Visual Studio 15
+VisualStudioVersion = 15.0.26430.6
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Winsock", "Winsock\Winsock.csproj", "{6FBD53C5-6E66-446A-82EA-5A0497ECD12A}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WinsockDemo", "WinsockDemo\WinsockDemo.csproj", "{40ED69CF-8E4C-46AC-8F58-4BBD8F9A3664}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WinsockSSLDemo", "WinsockSSLDemo\WinsockSSLDemo.csproj", "{3350E71B-6A00-4185-B821-07105B2B5C73}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +23,10 @@ Global
 		{40ED69CF-8E4C-46AC-8F58-4BBD8F9A3664}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{40ED69CF-8E4C-46AC-8F58-4BBD8F9A3664}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{40ED69CF-8E4C-46AC-8F58-4BBD8F9A3664}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3350E71B-6A00-4185-B821-07105B2B5C73}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3350E71B-6A00-4185-B821-07105B2B5C73}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3350E71B-6A00-4185-B821-07105B2B5C73}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3350E71B-6A00-4185-B821-07105B2B5C73}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

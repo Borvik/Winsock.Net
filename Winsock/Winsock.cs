@@ -400,6 +400,7 @@ namespace Treorisoft.Net
                 TextEncoding = _textEncoding,
                 CustomTextEncoding = _customTextEncoding,
                 SslProtocol = _sslProtocol,
+                Certificate = _certificate
             };
 
             // We add it to the clients list so any event handlers can fire.
@@ -786,7 +787,15 @@ namespace Treorisoft.Net
         internal void OnSslProtocolChanged(object sender) { SslProtocolChanged.SafeRaise(CanRaiseEvents, sender, EventArgs.Empty); }
         internal void OnStateChanged(object sender, StateChangedEventArgs args) { StateChanged.SafeRaise(CanRaiseEvents, sender, args); }
         internal void OnTextEncodingChanged(object sender) { TextEncodingChanged.SafeRaise(CanRaiseEvents, sender, EventArgs.Empty); }
-        internal ValidateCertificateEventArgs OnValidateCertificate(object sender, ValidateCertificateEventArgs args) { ValidateCertificate.SafeRaise(CanRaiseEvents, sender, args); return args; }
+        internal ValidateCertificateEventArgs OnValidateCertificate(object sender, ValidateCertificateEventArgs args) {
+            var myState = State;
+            ValidateCertificate.SafeRaise(CanRaiseEvents, sender, args, true);
+            return args;
+        }
+        internal void OnValidateCollectionCertificate(object sender, ValidateCertificateEventArgs args)
+        {
+            ValidateCertificate.SafeRaise(CanRaiseEvents, sender, args, true);
+        }
 
         #endregion
 

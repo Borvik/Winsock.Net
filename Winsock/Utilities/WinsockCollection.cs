@@ -109,6 +109,7 @@ namespace Treorisoft.Net.Utilities
             client.Connected += Parent.OnConnected;
             client.Disconnected += Client_Disconnected;
             client.Disconnected += Parent.OnDisconnected;
+            client.ValidateCertificate += Parent.OnValidateCollectionCertificate;
         }
         private void DetachEvents(Winsock client)
         {
@@ -121,6 +122,7 @@ namespace Treorisoft.Net.Utilities
             client.Connected -= Parent.OnConnected;
             client.Disconnected -= Client_Disconnected;
             client.Disconnected -= Parent.OnDisconnected;
+            client.ValidateCertificate -= Parent.OnValidateCollectionCertificate;
         }
 
         private void Client_Disconnected(object sender, EventArgs e)

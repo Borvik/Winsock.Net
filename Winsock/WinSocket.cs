@@ -666,6 +666,8 @@ namespace Treorisoft.Net
                         throwLegacyError = true;
                         break;
                     }
+                    if (data == null || data.Length < 1)
+                        break;
                 }
 
                 // Check for header error
@@ -676,83 +678,86 @@ namespace Treorisoft.Net
                     break;
                 }
 
-                int receivedSize = data.Length;
-                if (Header.Completed && ProcessingByteBuffer.Count + data.Length >= Header.Size)
+                if (data != null)
                 {
-                    // We have the full object that was sent
-                    data = ProcessingByteBuffer.Combine(data);
-                    ProcessingByteBuffer.Clear();
-
-                    byte[] objectData = null;
-                    if (data.Length > Header.Size)
+                    int receivedSize = data.Length;
+                    if (Header.Completed && ProcessingByteBuffer.Count + data.Length >= Header.Size)
                     {
-                        // There is extra data here - get only what we need
-                        // then push the rest back on the queue
-                        objectData = ArrayMethods.Shrink(ref data, Header.Size);
-                        packet.Data = data;
-                        lock (ReceivedPackets.SyncRoot)
-                            ReceivedPackets.PushFront(packet);
-                    }
-                    else
-                        objectData = data;
+                        // We have the full object that was sent
+                        data = ProcessingByteBuffer.Combine(data);
+                        ProcessingByteBuffer.Clear();
 
-                    // Try converting the bytes back to the object.
-                    var receivedObject = ObjectPacker.Unpack(objectData);
-                    var receivedType = receivedObject.GetType();
-                    if (receivedType == typeof(FileData) || receivedType == typeof(FileDataPart))
-                    {
-                        // Looks like we are dealing with an incoming file
-                        // Handle the data and get a reference to the incoming file
-                        FileData file = null;
-                        try
+                        byte[] objectData = null;
+                        if (data.Length > Header.Size)
                         {
-                            file = (receivedType == typeof(FileData)) ?
-                                HandleIncomingFile((FileData)receivedObject) :
-                                HandleIncomingFile((FileDataPart)receivedObject);
+                            // There is extra data here - get only what we need
+                            // then push the rest back on the queue
+                            objectData = ArrayMethods.Shrink(ref data, Header.Size);
+                            packet.Data = data;
+                            lock (ReceivedPackets.SyncRoot)
+                                ReceivedPackets.PushFront(packet);
                         }
-                        catch (Exception ex)
-                        {
-                            Parent.OnErrorReceived(Parent, ex.AsEventArgs());
-                            Close();
-                            break;
-                        }
+                        else
+                            objectData = data;
 
-                        // This part of the file is done, so we can 
-                        // reset the header for the next object
-                        Header.Reset();
-                        if (file != null)
+                        // Try converting the bytes back to the object.
+                        var receivedObject = ObjectPacker.Unpack(objectData);
+                        var receivedType = receivedObject.GetType();
+                        if (receivedType == typeof(FileData) || receivedType == typeof(FileDataPart))
                         {
-                            // We've got the file, raise the events
-                            // and remove our in progress reference to the file
-                            Parent.OnReceiveProgress(Parent, new ReceiveProgressEventArgs(file.LastReceivedSize, file.ReceivedBytes, file.FileSize, packet.RemoteEndPoint));
-                            if (file.ReceiveCompleted)
+                            // Looks like we are dealing with an incoming file
+                            // Handle the data and get a reference to the incoming file
+                            FileData file = null;
+                            try
                             {
-                                IncomingFiles.Remove(file.Guid);
-                                lock (((ICollection)ReceivedBuffer).SyncRoot)
-                                    ReceivedBuffer.Enqueue(file);
-                                Parent.OnDataArrival(Parent, new DataArrivalEventArgs(file.FileSize, packet.RemoteEndPoint));
+                                file = (receivedType == typeof(FileData)) ?
+                                    HandleIncomingFile((FileData)receivedObject) :
+                                    HandleIncomingFile((FileDataPart)receivedObject);
+                            }
+                            catch (Exception ex)
+                            {
+                                Parent.OnErrorReceived(Parent, ex.AsEventArgs());
+                                Close();
+                                break;
+                            }
+
+                            // This part of the file is done, so we can 
+                            // reset the header for the next object
+                            Header.Reset();
+                            if (file != null)
+                            {
+                                // We've got the file, raise the events
+                                // and remove our in progress reference to the file
+                                Parent.OnReceiveProgress(Parent, new ReceiveProgressEventArgs(file.LastReceivedSize, file.ReceivedBytes, file.FileSize, packet.RemoteEndPoint));
+                                if (file.ReceiveCompleted)
+                                {
+                                    IncomingFiles.Remove(file.Guid);
+                                    lock (((ICollection)ReceivedBuffer).SyncRoot)
+                                        ReceivedBuffer.Enqueue(file);
+                                    Parent.OnDataArrival(Parent, new DataArrivalEventArgs(file.FileSize, packet.RemoteEndPoint));
+                                }
                             }
                         }
+                        else
+                        {
+                            // Incoming object was not a file (could be a byte[])
+                            // Store it in the queue and raise the events
+                            lock (((ICollection)ReceivedBuffer).SyncRoot)
+                                ReceivedBuffer.Enqueue(receivedObject);
+
+                            Parent.OnReceiveProgress(Parent, new ReceiveProgressEventArgs(receivedSize, objectData.Length, Header.Size, packet.RemoteEndPoint));
+                            Header.Reset();
+                            Parent.OnDataArrival(Parent, new DataArrivalEventArgs(objectData.Length, packet.RemoteEndPoint));
+                        }
                     }
                     else
                     {
-                        // Incoming object was not a file (could be a byte[])
-                        // Store it in the queue and raise the events
-                        lock (((ICollection)ReceivedBuffer).SyncRoot)
-                            ReceivedBuffer.Enqueue(receivedObject);
-
-                        Parent.OnReceiveProgress(Parent, new ReceiveProgressEventArgs(receivedSize, objectData.Length, Header.Size, packet.RemoteEndPoint));
-                        Header.Reset();
-                        Parent.OnDataArrival(Parent, new DataArrivalEventArgs(objectData.Length, packet.RemoteEndPoint));
+                        // Either the header wasn't completed, or we haven't got 
+                        // all of the object yet, either way we need more data
+                        // store what we've got into a temporary buffer
+                        ProcessingByteBuffer.Add(data);
+                        Parent.OnReceiveProgress(Parent, new ReceiveProgressEventArgs(receivedSize, ProcessingByteBuffer.Count, Header.Size, packet.RemoteEndPoint));
                     }
-                }
-                else
-                {
-                    // Either the header wasn't completed, or we haven't got 
-                    // all of the object yet, either way we need more data
-                    // store what we've got into a temporary buffer
-                    ProcessingByteBuffer.Add(data);
-                    Parent.OnReceiveProgress(Parent, new ReceiveProgressEventArgs(receivedSize, ProcessingByteBuffer.Count, Header.Size, packet.RemoteEndPoint));
                 }
             }
 

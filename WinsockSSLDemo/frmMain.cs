@@ -5,17 +5,18 @@ using System.Data;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using Treorisoft.Net;
 using Treorisoft.Net.Utilities;
 
-namespace WinsockDemo
+namespace WinsockSSLDemo
 {
-    public partial class Form1 : Form
+    public partial class frmMain : Form
     {
-        public Form1()
+        public frmMain()
         {
             InitializeComponent();
             dgv.AutoGenerateColumns = false;
@@ -78,9 +79,10 @@ namespace WinsockDemo
 
         private void cmdServerListen_Click(object sender, EventArgs e)
         {
-            if(cmdServerListen.Text == "Listen")
+            if (cmdServerListen.Text == "Listen")
             {
                 if (ServerLog) LogServer("Parent: Listen()");
+                wskServer.Certificate = GetRandomCertificate();
                 wskServer.Listen();
             }
             else
@@ -94,7 +96,7 @@ namespace WinsockDemo
         {
             if (e.RowIndex < 0) return;
 
-            if(e.ColumnIndex == dgv.Columns["colCloseClient"].Index)
+            if (e.ColumnIndex == dgv.Columns["colCloseClient"].Index)
             {
                 if (ServerLog) LogServer("Client: Close()");
                 var row = dgv.Rows[e.RowIndex] as DataGridViewRow;
@@ -183,7 +185,7 @@ namespace WinsockDemo
 
         private void wskServer_StateChanged(object sender, Treorisoft.Net.StateChangedEventArgs e)
         {
-            if(sender == wskServer)
+            if (sender == wskServer)
             {
                 if (ServerLog) LogServer(string.Format("Parent: State Change ({0})", e.NewState));
                 grpServer.Text = string.Format("Server ({0})", e.NewState);
@@ -220,7 +222,7 @@ namespace WinsockDemo
 
         private void cmdClientConnect_Click(object sender, EventArgs e)
         {
-            if(cmdClientConnect.Text == "Connect")
+            if (cmdClientConnect.Text == "Connect")
             {
                 if (ClientLog) LogClient(string.Format("Connect ({0}:{1})", wskClient.RemoteHost, wskClient.RemotePort));
                 wskClient.Connect();
@@ -327,7 +329,7 @@ namespace WinsockDemo
         private void cmdServerSend_Click(object sender, EventArgs e)
         {
             string message = txtServerSend.Text.Trim();
-            if(message != "")
+            if (message != "")
             {
                 if (ServerLog) LogServer(string.Format("Client: Sending string \"{0}\"", message));
                 wskServer.Clients.SendToAll(message);
@@ -339,7 +341,7 @@ namespace WinsockDemo
         private void cmdClientSend_Click(object sender, EventArgs e)
         {
             string message = txtClientSend.Text.Trim();
-            if(message != "")
+            if (message != "")
             {
                 if (ClientLog) LogClient(string.Format("Sending string \"{0}\"", message));
                 wskClient.Send(message);
@@ -366,31 +368,76 @@ namespace WinsockDemo
             else file.Info.Delete();
         }
 
-        private void button1_Click(object sender, EventArgs e)
-        {
-            wskClient.SslProtocol = System.Security.Authentication.SslProtocols.Default;
-            wskClient.RemoteHost = "www.google.com";
-            wskClient.RemotePort = 443;
-            wskClient.LegacySupport = true;
-            wskClient.CustomTextEncoding = Encoding.UTF8;
-            wskClient.Connect("www.google.com");
-        }
-
-        private void button2_Click(object sender, EventArgs e)
-        {
-            StringBuilder sb = new StringBuilder();
-            sb.AppendLine("GET / HTTP/1.1");
-            sb.AppendLine("Host: www.google.com");
-            sb.AppendLine("passive: true");
-            sb.AppendLine("Accepts: text/html,application/xhtml+xml,application/xml;q=0.9");
-            sb.AppendLine();
-            wskClient.Send(sb.ToString());
-        }
-
-        private void Form1_FormClosing(object sender, FormClosingEventArgs e)
+        private void frmMain_FormClosing(object sender, FormClosingEventArgs e)
         {
             wskClient.Close();
             wskServer.Close();
+        }
+
+        private void wskServer_ValidateCertificate(object sender, ValidateCertificateEventArgs e)
+        {
+            /**
+             * Called when attempting to validate a certificate the CLIENT SENT for authentication
+             * 
+             * The default value for IsValid is determined by the SslPolicyErrors as defined in System.Net.Security
+             * None: No SSL policy errors.
+             * RemoteCertificateNotAvailable: Certificate not available.
+             * RemoteCertificateNameMismatch: Certificate name mismatch.
+             * RemoteCertificateChainErrors: Problem with the certificate chain.
+             * 
+             * IsValid defaults to TRUE only when SslPolicyErrors = None, otherwise false.
+             * 
+             * This method allows you to define your own checks on the certifcate.
+             * 
+             * You can make a previously invalid certificate valid, by setting IsValid to true or vice versa.
+             */
+            e.IsValid = true;
+        }
+
+        private void wskClient_ValidateCertificate(object sender, ValidateCertificateEventArgs e)
+        {
+            /**
+             * The exact same event is called on the server as on the client - however the context is different.
+             * 
+             * On the client it is called when attempting to validate the certificate the SERVER SENT.
+             */
+            e.IsValid = true;
+        }
+
+        /**
+         * Found this on StackOverflow: https://stackoverflow.com/questions/6836247/how-to-create-a-minimal-dummy-x509certificate2
+         * Answer by "Mike S"
+         * 
+         * It's not really random as it just grabs the first certificate in the store.
+         * 
+         * This should only really be used for testing, and worked great for this demo.
+         * 
+         * Ideally you would be specifying a path or building the X509Certificate yourself
+         * and assigning it at runtime.
+         * 
+         * You could specify it at design time using the properties window, just be
+         * careful - that stores the certificate with the application.  While possible
+         * it is not the recommended route.
+         * 
+         * Ideally you would do this at runtime to avoid storing the certificate in a repository:
+         * Either specify the path to your certificate file to either the Connect or Listen
+         * methods, OR build the X509Certificate object yourself and pass it to the Connect
+         * or Listen method or event directly assign it to the Certificate property.
+         */
+        private X509Certificate GetRandomCertificate()
+        {
+            X509Store store = new X509Store(StoreName.My, StoreLocation.LocalMachine);
+            store.Open(OpenFlags.ReadOnly);
+            try
+            {
+                if (store.Certificates.Count == 0)
+                    return null;
+                return store.Certificates[0];
+            }
+            finally
+            {
+                store.Close();
+            }
         }
     }
 }
