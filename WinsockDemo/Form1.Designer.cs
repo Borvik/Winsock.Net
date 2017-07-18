@@ -53,10 +53,10 @@
             this.pbClientSend = new System.Windows.Forms.ProgressBar();
             this.chkLogClient = new System.Windows.Forms.CheckBox();
             this.cmdClientConnect = new System.Windows.Forms.Button();
-            this.wskServer = new Treorisoft.Net.Winsock();
-            this.wskClient = new Treorisoft.Net.Winsock();
             this.dlgOpen = new System.Windows.Forms.OpenFileDialog();
             this.dlgSave = new System.Windows.Forms.SaveFileDialog();
+            this.wskServer = new Treorisoft.Net.Winsock();
+            this.wskClient = new Treorisoft.Net.Winsock();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.Panel2.SuspendLayout();
@@ -374,6 +374,7 @@
             // wskClient
             // 
             this.wskClient.CustomTextEncoding = ((System.Text.Encoding)(resources.GetObject("wskClient.CustomTextEncoding")));
+            this.wskClient.RemoteHost = "127.0.0.1";
             this.wskClient.Connected += new System.EventHandler<Treorisoft.Net.ConnectedEventArgs>(this.wskClient_Connected);
             this.wskClient.DataArrival += new System.EventHandler<Treorisoft.Net.DataArrivalEventArgs>(this.wskClient_DataArrival);
             this.wskClient.Disconnected += new System.EventHandler(this.wskClient_Disconnected);

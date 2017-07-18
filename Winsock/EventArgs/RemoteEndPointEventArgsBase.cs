@@ -17,7 +17,18 @@ namespace Treorisoft.Net
         /// <summary>
         /// Gets the ip address of the remote endpoint.
         /// </summary>
-        public string RemoteIP { get { return RemoteEndPoint?.Address.ToString(); } }
+        public string RemoteIP
+        {
+            get
+            {
+                if (RemoteEndPoint == null) return null;
+                if (RemoteEndPoint.Address.IsIPv4MappedToIPv6)
+                {
+                    return RemoteEndPoint.Address.MapToIPv4().ToString();
+                }
+                return RemoteEndPoint.Address.ToString();
+            }
+        }
 
         /// <summary>
         /// Gets the port number used by the remote endpoint.

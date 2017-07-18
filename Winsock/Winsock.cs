@@ -389,7 +389,7 @@ namespace Treorisoft.Net
         /// Accepts an incoming connection request and begins to monitor it for incoming data. 
         /// </summary>
         /// <param name="client">A <see cref="Socket" /> that represents the client being accepted.</param>
-        public void Accept(Socket client)
+        public Winsock Accept(Socket client)
         {
             if (IsDisposed) throw new ObjectDisposedException(GetType().Name);
             var w = new Winsock()
@@ -406,7 +406,11 @@ namespace Treorisoft.Net
             // We add it to the clients list so any event handlers can fire.
             var guid = Clients.Add(w);
             if (!w._socket.Accept(client))
+            {
                 Clients.Remove(guid);
+                return null;
+            }
+            return w;
         }
 
         /// <summary>
@@ -745,8 +749,21 @@ namespace Treorisoft.Net
                 OnLocalPortChanged(this);
             }
         }
-        internal void ChangeRemoteHost(string host)
+        internal void ChangeRemoteHost(IPEndPoint endPoint)
         {
+            /*
+             * if (RemoteEndPoint == null) return null;
+                if (RemoteEndPoint.Address.IsIPv4MappedToIPv6)
+                {
+                    return RemoteEndPoint.Address.MapToIPv4().ToString();
+                }
+                return RemoteEndPoint.Address.ToString();
+             */
+            string host = null;
+            if (endPoint != null)
+            {
+                host = endPoint.Address.IsIPv4MappedToIPv6 ? endPoint.Address.MapToIPv4().ToString() : endPoint.Address.ToString();
+            }
             _remoteHost = host;
             OnRemoteHostChanged(this);
         }

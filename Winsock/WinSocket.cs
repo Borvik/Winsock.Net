@@ -250,7 +250,7 @@ namespace Treorisoft.Net
                 socket = new AsyncSocket(client);
                 
                 Parent.ChangeLocalPort(LocalEndPoint.Port);
-                Parent.ChangeRemoteHost(RemoteEndPoint.Address.ToString());
+                Parent.ChangeRemoteHost(RemoteEndPoint);
                 Parent.ChangeRemotePort(RemoteEndPoint.Port);
 
                 Parent.ChangeState(State.Connected);
