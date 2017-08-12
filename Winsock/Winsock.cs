@@ -508,7 +508,7 @@ namespace Treorisoft.Net
         public void Connect()
         {
             if (IsDisposed) throw new ObjectDisposedException(GetType().Name);
-            _socket.Connect(RemoteHost, RemotePort);
+            _socket.Connect(RemoteHost, RemotePort, null, 0);
         }
         /// <summary>
         /// Establishes a secure connection to a remote host.
@@ -517,7 +517,7 @@ namespace Treorisoft.Net
         public void Connect(string sslHost)
         {
             if (IsDisposed) throw new ObjectDisposedException(GetType().Name);
-            _socket.Connect(RemoteHost, RemotePort, sslHost);
+            _socket.Connect(RemoteHost, RemotePort, sslHost, null, 0);
         }
         /// <summary>
         /// Establishes a secure connection to a remote host.
@@ -547,7 +547,7 @@ namespace Treorisoft.Net
             if (IsDisposed) throw new ObjectDisposedException(GetType().Name);
             RemoteHost = remoteHostOrIp;
             RemotePort = remotePort;
-            _socket.Connect(RemoteHost, RemotePort);
+            _socket.Connect(RemoteHost, RemotePort, null, 0);
         }
         /// <summary>
         /// Establishes a secure connection to a remote host.
@@ -560,7 +560,7 @@ namespace Treorisoft.Net
             if (IsDisposed) throw new ObjectDisposedException(GetType().Name);
             RemoteHost = remoteHostOrIp;
             RemotePort = remotePort;
-            _socket.Connect(RemoteHost, RemotePort, sslHost);
+            _socket.Connect(RemoteHost, RemotePort, sslHost, null, 0);
         }
         /// <summary>
         /// Establishes a secure connection to a remote host.
@@ -595,9 +595,192 @@ namespace Treorisoft.Net
             RemoteHost = remoteHostOrIp;
             RemotePort = remotePort;
             Certificate = certificate;
-            _socket.Connect(remoteHostOrIp, remotePort, sslHost);
+            _socket.Connect(remoteHostOrIp, remotePort, sslHost, null, 0);
         }
 
+        /// <summary>
+        /// Establishes a connection to a remote host.
+        /// </summary>
+        public void ConnectFrom(string localIP)
+        {
+            if (IsDisposed) throw new ObjectDisposedException(GetType().Name);
+            _socket.Connect(RemoteHost, RemotePort, localIP, LocalPort);
+        }
+        /// <summary>
+        /// Establishes a connection to a remote host.
+        /// </summary>
+        public void ConnectFrom(string localIP, int localPort)
+        {
+            if (IsDisposed) throw new ObjectDisposedException(GetType().Name);
+            _socket.Connect(RemoteHost, RemotePort, localIP, localPort);
+        }
+        /// <summary>
+        /// Establishes a secure connection to a remote host.
+        /// </summary>
+        /// <param name="sslHost">The name of the host to validate the server certificate for.</param>
+        public void ConnectFrom(string localIp, string sslHost)
+        {
+            if (IsDisposed) throw new ObjectDisposedException(GetType().Name);
+            _socket.Connect(RemoteHost, RemotePort, sslHost, localIp, LocalPort);
+        }
+        /// <summary>
+        /// Establishes a secure connection to a remote host.
+        /// </summary>
+        /// <param name="sslHost">The name of the host to validate the server certificate for.</param>
+        public void ConnectFrom(string localIp, int localPort, string sslHost)
+        {
+            if (IsDisposed) throw new ObjectDisposedException(GetType().Name);
+            _socket.Connect(RemoteHost, RemotePort, sslHost, localIp, localPort);
+        }
+        /// <summary>
+        /// Establishes a secure connection to a remote host.
+        /// </summary>
+        /// <param name="sslHost">The name of the host to validate the server certificate for.</param>
+        /// <param name="x509CertificatePath">The path to the SSL certificate the client should to use authenticate itself as.</param>
+        public void ConnectFrom(string localIp, string sslHost, string x509CertificatePath)
+        {
+            ConnectFrom(localIp, LocalPort, RemoteHost, RemotePort, sslHost, x509CertificatePath);
+        }
+        /// <summary>
+        /// Establishes a secure connection to a remote host.
+        /// </summary>
+        /// <param name="sslHost">The name of the host to validate the server certificate for.</param>
+        /// <param name="x509CertificatePath">The path to the SSL certificate the client should to use authenticate itself as.</param>
+        public void ConnectFrom(string localIp, int localPort, string sslHost, string x509CertificatePath)
+        {
+            ConnectFrom(localIp, localPort, RemoteHost, RemotePort, sslHost, x509CertificatePath);
+        }
+        /// <summary>
+        /// Establishes a secure connection to a remote host.
+        /// </summary>
+        /// <param name="sslHost">The name of the host to validate the server certificate for.</param>
+        /// <param name="certificate">A <see cref="X509Certificate"/> that the client should use to authenticatie itself as.</param>
+        public void ConnectFrom(string localIp, string sslHost, X509Certificate certificate)
+        {
+            ConnectFrom(localIp, LocalPort, RemoteHost, RemotePort, sslHost, certificate);
+        }
+        /// <summary>
+        /// Establishes a secure connection to a remote host.
+        /// </summary>
+        /// <param name="sslHost">The name of the host to validate the server certificate for.</param>
+        /// <param name="certificate">A <see cref="X509Certificate"/> that the client should use to authenticatie itself as.</param>
+        public void ConnectFrom(string localIp, int localPort, string sslHost, X509Certificate certificate)
+        {
+            ConnectFrom(localIp, localPort, RemoteHost, RemotePort, sslHost, certificate);
+        }
+        /// <summary>
+        /// Establishes a connection to a remote host.
+        /// </summary>
+        /// <param name="remoteHostOrIp">A value containing the Hostname or IP address of the remote host.</param>
+        /// <param name="remotePort">A value indicating the port on the remote host to connect to.</param>
+        public void ConnectFrom(string localIp, string remoteHostOrIp, int remotePort)
+        {
+            if (IsDisposed) throw new ObjectDisposedException(GetType().Name);
+            RemoteHost = remoteHostOrIp;
+            RemotePort = remotePort;
+            _socket.Connect(RemoteHost, RemotePort, localIp, LocalPort);
+        }
+        /// <summary>
+        /// Establishes a connection to a remote host.
+        /// </summary>
+        /// <param name="remoteHostOrIp">A value containing the Hostname or IP address of the remote host.</param>
+        /// <param name="remotePort">A value indicating the port on the remote host to connect to.</param>
+        public void ConnectFrom(string localIp, int localPort, string remoteHostOrIp, int remotePort)
+        {
+            if (IsDisposed) throw new ObjectDisposedException(GetType().Name);
+            RemoteHost = remoteHostOrIp;
+            RemotePort = remotePort;
+            _socket.Connect(RemoteHost, RemotePort, localIp, localPort);
+        }
+        /// <summary>
+        /// Establishes a secure connection to a remote host.
+        /// </summary>
+        /// <param name="remoteHostOrIp">A value containing the Hostname or IP address of the remote host.</param>
+        /// <param name="remotePort">A value indicating the port on the remote host to connect to.</param>
+        /// <param name="sslHost">The name of the host to validate the server certificate for.</param>
+        public void ConnectFrom(string localIp, string remoteHostOrIp, int remotePort, string sslHost)
+        {
+            if (IsDisposed) throw new ObjectDisposedException(GetType().Name);
+            RemoteHost = remoteHostOrIp;
+            RemotePort = remotePort;
+            _socket.Connect(RemoteHost, RemotePort, sslHost, localIp, LocalPort);
+        }
+        /// <summary>
+        /// Establishes a secure connection to a remote host.
+        /// </summary>
+        /// <param name="remoteHostOrIp">A value containing the Hostname or IP address of the remote host.</param>
+        /// <param name="remotePort">A value indicating the port on the remote host to connect to.</param>
+        /// <param name="sslHost">The name of the host to validate the server certificate for.</param>
+        public void ConnectFrom(string localIp, int localPort, string remoteHostOrIp, int remotePort, string sslHost)
+        {
+            if (IsDisposed) throw new ObjectDisposedException(GetType().Name);
+            RemoteHost = remoteHostOrIp;
+            RemotePort = remotePort;
+            _socket.Connect(RemoteHost, RemotePort, sslHost, localIp, localPort);
+        }
+        /// <summary>
+        /// Establishes a secure connection to a remote host.
+        /// </summary>
+        /// <param name="remoteHostOrIp">A value containing the Hostname or IP address of the remote host.</param>
+        /// <param name="remotePort">A value indicating the port on the remote host to connect to.</param>
+        /// <param name="sslHost">The name of the host to validate the server certificate for.</param>
+        /// <param name="x509CertificatePath">The path to the SSL certificate the client should to use authenticate itself as.</param>
+        public void ConnectFrom(string localIp, string remoteHostOrIp, int remotePort, string sslHost, string x509CertificatePath)
+        {
+            if (IsDisposed) throw new ObjectDisposedException(GetType().Name);
+
+            var certificate = X509Certificate.CreateFromCertFile(x509CertificatePath);
+            if (certificate == null)
+                throw new WinsockException("Unable to load the certificate file - should be a valid PKCS7 signed X.509 certificate.");
+
+            ConnectFrom(localIp, LocalPort, remoteHostOrIp, remotePort, sslHost, certificate);
+        }
+        /// <summary>
+        /// Establishes a secure connection to a remote host.
+        /// </summary>
+        /// <param name="remoteHostOrIp">A value containing the Hostname or IP address of the remote host.</param>
+        /// <param name="remotePort">A value indicating the port on the remote host to connect to.</param>
+        /// <param name="sslHost">The name of the host to validate the server certificate for.</param>
+        /// <param name="x509CertificatePath">The path to the SSL certificate the client should to use authenticate itself as.</param>
+        public void ConnectFrom(string localIp, int localPort, string remoteHostOrIp, int remotePort, string sslHost, string x509CertificatePath)
+        {
+            if (IsDisposed) throw new ObjectDisposedException(GetType().Name);
+
+            var certificate = X509Certificate.CreateFromCertFile(x509CertificatePath);
+            if (certificate == null)
+                throw new WinsockException("Unable to load the certificate file - should be a valid PKCS7 signed X.509 certificate.");
+
+            ConnectFrom(localIp, localPort, remoteHostOrIp, remotePort, sslHost, certificate);
+        }
+        /// <summary>
+        /// Establishes a secure connection to a remote host.
+        /// </summary>
+        /// <param name="remoteHostOrIp">A value containing the Hostname or IP address of the remote host.</param>
+        /// <param name="remotePort">A value indicating the port on the remote host to connect to.</param>
+        /// <param name="sslHost">The name of the host to validate the certificate for.</param>
+        /// <param name="certificate">A <see cref="X509Certificate"/> that the client should use to authenticatie itself as.</param>
+        public void ConnectFrom(string localIp, string remoteHostOrIp, int remotePort, string sslHost, X509Certificate certificate)
+        {
+            ConnectFrom(localIp, LocalPort, remoteHostOrIp, remotePort, sslHost, certificate);
+        }
+        /// <summary>
+        /// Establishes a secure connection to a remote host.
+        /// </summary>
+        /// <param name="remoteHostOrIp">A value containing the Hostname or IP address of the remote host.</param>
+        /// <param name="remotePort">A value indicating the port on the remote host to connect to.</param>
+        /// <param name="sslHost">The name of the host to validate the certificate for.</param>
+        /// <param name="certificate">A <see cref="X509Certificate"/> that the client should use to authenticatie itself as.</param>
+        public void ConnectFrom(string localIp, int localPort, string remoteHostOrIp, int remotePort, string sslHost, X509Certificate certificate)
+        {
+            if (IsDisposed) throw new ObjectDisposedException(GetType().Name);
+            if (certificate == null && SslProtocol != SslProtocols.None)
+                throw new WinsockException("You must supply a SSL certificate when SslProtocol is not None.");
+
+            RemoteHost = remoteHostOrIp;
+            RemotePort = remotePort;
+            Certificate = certificate;
+            _socket.Connect(remoteHostOrIp, remotePort, sslHost, localIp, localPort);
+        }
         #endregion
 
         #region Client/Server Methods

@@ -168,9 +168,11 @@ namespace Treorisoft.Net
         /// </summary>
         /// <param name="remoteHostOrIp">A value containing the Hostname or IP address of the remote host.</param>
         /// <param name="remotePort">A value indicating the port on the remote host to connect to.</param>
-        public void Connect(string remoteHostOrIp, int remotePort)
+        /// <param name="localIp">A value indicating the IP address the client should connect from.</param>
+        /// <param name="localPort">A value indicating the port the client should connect from.</param>
+        public void Connect(string remoteHostOrIp, int remotePort, string localIp, int localPort)
         {
-            Connect(remoteHostOrIp, remotePort, null);
+            Connect(remoteHostOrIp, remotePort, null, localIp, localPort);
         }
         /// <summary>
         /// Establishes a connection to a remote host.
@@ -178,7 +180,9 @@ namespace Treorisoft.Net
         /// <param name="remoteHostOrIp">A value containing the Hostname or IP address of the remote host.</param>
         /// <param name="remotePort">A value indicating the port on the remote host to connect to.</param>
         /// <param name="sslHost">The name of the host to validate the certificate for.</param>
-        public async void Connect(string remoteHostOrIp, int remotePort, string sslHost)
+        /// <param name="localIp">A value indicating the IP address the client should connect from.</param>
+        /// <param name="localPort">A value indicating the port the client should connect from.</param>
+        public async void Connect(string remoteHostOrIp, int remotePort, string sslHost, string localIp, int localPort)
         {
             if (Parent.State != State.Closed)
                 throw new WinsockException("Cannot connect to a remote host when not Closed.");
@@ -188,8 +192,8 @@ namespace Treorisoft.Net
              * If not - we need to try and resolve the fully qualified domain.
              */
             Parent.ChangeState(State.ResolvingHost);
-            IPAddress resolvedIP = null;
-            if (!IPAddress.TryParse(remoteHostOrIp, out resolvedIP))
+            IPAddress resolvedRemoteIP = null, resolvedLocalIP = null;
+            if (!IPAddress.TryParse(remoteHostOrIp, out resolvedRemoteIP))
             {
                 IPHostEntry entry = await Dns.GetHostEntryAsync(remoteHostOrIp);
                 if (entry == null || entry.AddressList.Length == 0)
@@ -197,22 +201,30 @@ namespace Treorisoft.Net
                     string name = (entry != null) ? entry.HostName : remoteHostOrIp;
                     throw new WinsockException(string.Format("Hostname \"{0}\" could not be resolved.", name));
                 }
-                resolvedIP = entry.AddressList[0];
+                resolvedRemoteIP = entry.AddressList[0];
+            }
+
+            if (!string.IsNullOrWhiteSpace(localIp) && !IPAddress.TryParse(localIp, out resolvedLocalIP))
+            {
+                throw new WinsockException(string.Format("The value \"{0}\" is not a valid IP address for local binding.", localIp));
             }
             Parent.ChangeState(State.HostResolved);
-
+            
             /**
              * Take our IP address and attempt to create the connection.
              * Upon successfull connections - different BeginReceives could be called
              * depending on if this was an attempt at a SECURE connection.
              */
-            IPEndPoint endPoint = new IPEndPoint(resolvedIP, remotePort);
+            IPEndPoint endPoint = new IPEndPoint(resolvedRemoteIP, remotePort);
+            IPEndPoint localEndPoint = (resolvedLocalIP != null) ? new IPEndPoint(resolvedLocalIP, localPort) : null;
             socket = new AsyncSocket(endPoint.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
             Parent.ChangeState(State.Connecting);
 
             bool connectFail = false;
             try
             {
+                if (localEndPoint != null)
+                    socket.Bind(localEndPoint);
                 await socket.ConnectAsync(endPoint);
             }
             catch(Exception ex)
