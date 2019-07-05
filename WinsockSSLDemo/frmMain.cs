@@ -405,10 +405,8 @@ namespace WinsockSSLDemo
         }
 
         /**
-         * Found this on StackOverflow: https://stackoverflow.com/questions/6836247/how-to-create-a-minimal-dummy-x509certificate2
-         * Answer by "Mike S"
-         * 
-         * It's not really random as it just grabs the first certificate in the store.
+         * This isn't really getting a random certificate - it is generating a temporary self-signed
+         * certificate using a library found by Doug E. Cook.
          * 
          * This should only really be used for testing, and worked great for this demo.
          * 
@@ -426,18 +424,15 @@ namespace WinsockSSLDemo
          */
         private X509Certificate GetRandomCertificate()
         {
-            X509Store store = new X509Store(StoreName.My, StoreLocation.LocalMachine);
-            store.Open(OpenFlags.ReadOnly);
-            try
-            {
-                if (store.Certificates.Count == 0)
-                    return null;
-                return store.Certificates[0];
-            }
-            finally
-            {
-                store.Close();
-            }
+            byte[] c = Certificate.CreateSelfSignCertificatePfx(
+                "CN=test-demo.com",
+                DateTime.Now.AddMonths(-1),
+                DateTime.Now.AddMonths(5),
+                "test"
+            );
+
+            X509Certificate cert = new X509Certificate2(c, "test");
+            return cert;
         }
     }
 }
