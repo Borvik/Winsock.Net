@@ -465,7 +465,15 @@ namespace Treorisoft.Net
         {
             while (Parent.State == State.Connected)
             {
-                bool connected = socket.IsConnected;
+                bool connected = socket != null && socket.IsConnected;
+                int notConnectedCount = 0;
+                while (!connected && notConnectedCount < 5)
+                {
+                    notConnectedCount++;
+                    Thread.Sleep(10);
+                    connected = socket != null && socket.IsConnected;
+                }
+
                 if (!connected && Parent.State == State.Connected)
                 {
                     Close();
